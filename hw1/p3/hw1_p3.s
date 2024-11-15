@@ -53,7 +53,7 @@ Terminate:
 ################################################################################
 
 .rodata
-    pattern: .string "../../{student id}_hw1/p3/pattern0.txt"
+    pattern: .string "../../b12901024_hw1/p3/pattern0.txt"
     # pattern: .string "../../{student id}_hw1/p3/pattern1.txt"
     # pattern: .string "../../{student id}_hw1/p3/pattern2.txt"
 .text
@@ -65,5 +65,28 @@ Terminate:
 # go to Exit when your function is finish
 
 your_function:
+    mv t2, a2
+    li t5, 94
+    li t6, -1
 
-  jal x0, Exit
+traverse:
+    lb t3, 0(t2)
+    beq t3, t5, noCycle
+    
+    add t3, t3, a2
+    lb t4, 0(t3)
+    beq t4, t6, cycleDetected
+
+    sb t6, 0(t2)
+    mv t2, t3
+    beq x0, x0, traverse
+
+noCycle:
+    li t0, 0
+    jal x0, Exit
+
+cycleDetected:
+    li t0, 1
+    sub t3, t3, a2
+    mv t1, t3
+    jal x0, Exit
