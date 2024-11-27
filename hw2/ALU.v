@@ -81,11 +81,11 @@ always @(posedge clk or negedge rst_n) begin
         end
     end else if (div_active) begin
         if (cycle_count < 32) begin
-            remainder = remainder - {divisor, 32'd0}
+            remainder = remainder - {divisor, 32'd0};
             if (remainder[63] == 1'b1) begin
-                remainder = remainder + {divisor, 32'd0} << 1
+                remainder = remainder + {divisor, 32'd0} << 1;
             end else begin
-                remainder = {remainder, 1'b1} << 1
+                remainder = {remainder, 1'b1} << 1;
             end
             count <= count + 1;
         end else begin
