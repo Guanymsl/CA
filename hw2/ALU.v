@@ -22,7 +22,7 @@ reg mul_active, div_active;
 // ===============================================
 //                Combinational Logic
 // ===============================================
-always @(valid) begin
+always @(posedge valid) begin
     ready <= 1'b0
     case (mode)
         4'b0000: out_data = {32'd0, in_A + in_B};
@@ -42,7 +42,7 @@ end
 // ===============================================
 //                Sequential Logic
 // ===============================================
-always @(posedge clk or negedge rst_n or valid) begin
+always @(posedge clk or negedge rst_n or posedge valid) begin
     ready <= 1'b0;
     case (mode)
         4'b1001: begin
