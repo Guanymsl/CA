@@ -42,7 +42,7 @@ end
 // ===============================================
 //                Sequential Logic
 // ===============================================
-always @(posedge clk or negedge rst_n or posedge valid) begin
+always @(posedge valid) begin
     ready <= 1'b0;
     case (mode)
         4'b1001: begin
@@ -58,6 +58,9 @@ always @(posedge clk or negedge rst_n or posedge valid) begin
             remainder <= {32'd0, in_A} << 1;
         end
     endcase
+end
+
+always @(posedge clk or negedge rst_n4 and valid) begin
     if (!rst_n) begin
         ready <= 1'b0;
         mul_active <= 1'b0;
