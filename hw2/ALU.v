@@ -22,51 +22,48 @@ reg mul_active, div_active;
 // ===============================================
 //                Combinational Logic
 // ===============================================
-always @(*) begin
-    ready = 1'b0;
-    out_data = 64'd0;
-    if (valid) begin
-        case (mode)
-            4'b0000: out_data = {32'd0, in_A + in_B};
-            4'b0001: out_data = {32'd0, in_A - in_B};
-            4'b0010: out_data = {32'd0, in_A & in_B};
-            4'b0011: out_data = {32'd0, in_A | in_B};
-            4'b0100: out_data = {32'd0, in_A ^ in_B};
-            4'b0101: out_data = {63'd0, (in_A == in_B)};
-            4'b0110: out_data = {63'd0, (in_A >= in_B)};
-            4'b0111: out_data = {32'd0, in_A >> in_B};
-            4'b1000: out_data = {32'd0, in_A << in_B};
-        endcase
-        if (mode >= 4'b0000 && mode <= 4'b1000)
-            ready = 1'b1;
-    end
+always @(valid) begin
+    ready <= 1'b0
+    case (mode)
+        4'b0000: out_data = {32'd0, in_A + in_B};
+        4'b0001: out_data = {32'd0, in_A - in_B};
+        4'b0010: out_data = {32'd0, in_A & in_B};
+        4'b0011: out_data = {32'd0, in_A | in_B};
+        4'b0100: out_data = {32'd0, in_A ^ in_B};
+        4'b0101: out_data = {63'd0, (in_A == in_B)};
+        4'b0110: out_data = {63'd0, (in_A >= in_B)};
+        4'b0111: out_data = {32'd0, in_A >> in_B};
+        4'b1000: out_data = {32'd0, in_A << in_B};
+    endcase
+    if (mode >= 4'b0000 && mode <= 4'b1000)
+        ready = 1'b1;
 end
 
 // ===============================================
 //                Sequential Logic
 // ===============================================
-always @(posedge clk or negedge rst_n) begin
+always @(posedge clk or negedge rst_n or valid) begin
+    ready <= 1'b0;
+    case (mode)
+        4'b1001: begin
+            mul_active <= 1'b1;
+            count <= 6'd0;
+            multiplicand <= in_A;
+            product <= {32'd0, in_B};
+        end
+        4'b1010: begin
+            div_active <= 1'b1;
+            count <= 6'd0;
+            divisor <= in_B;
+            remainder <= {32'd0, in_A} << 1;
+        end
+    endcase
     if (!rst_n) begin
         ready <= 1'b0;
         mul_active <= 1'b0;
         div_active <= 1'b0;
         out_data <= 64'd0;
         count <= 6'd0;
-    end else if (valid) begin
-        case (mode)
-            4'b1001: begin
-                mul_active <= 1'b1;
-                count <= 6'd0;
-                multiplicand <= in_A;
-                product <= {32'd0, in_B};
-            end
-            4'b1010: begin
-                div_active <= 1'b1;
-                count <= 6'd0;
-                divisor <= in_B;
-                remainder <= {32'd0, in_A} << 1;
-            end
-        endcase
     end else if (mul_active) begin
         if (count < 32) begin
             if (product[0] == 1'b1) begin
