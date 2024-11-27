@@ -20,6 +20,7 @@ reg [31:0] divisor;
 reg [31:0] multiplicand;
 reg [5:0]  count;
 reg mul_active, div_active;
+reg load;
 
 // ===============================================
 //                Combinational Logic
@@ -47,7 +48,7 @@ always @(*) begin
         4'b0011: out = {32'd0, in_A | in_B};
         4'b0100: out = {32'd0, in_A ^ in_B};
         4'b0101: out = {63'd0, (in_A == in_B)};
-        4'b0110: out = {63'd0, (in_A >= in_B)};
+        4'b0110: out = {63'd0, ($signed(in_A) >= $signed(in_B))};
         4'b0111: out = {32'd0, in_A >> in_B};
         4'b1000: out = {32'd0, in_A << in_B};
     endcase
@@ -63,12 +64,15 @@ always @(posedge clk or negedge rst_n) begin
         div_active <= 1'b0;
         out_data <= 64'd0;
         count <= 6'd0;
+        load <= 1'b0;
     end else if (ready) begin
         ready <= 1'b0;
         mul_active <= 1'b0;
         div_active <= 1'b0;
         count <= 6'd0;
-    end else if (valid) begin
+        load <= 1'b0;
+    end else if (valid && !load) begin
+        load <= 1'b1;
         case (mode)
             4'b1001: begin
                 mul_active <= 1'b1;
