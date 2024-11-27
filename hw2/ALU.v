@@ -85,14 +85,16 @@ always @(posedge clk or negedge rst_n) begin
             out_data <= out;
             ready <= 1'b1;
         end
-    end
-    if (mul_active) begin
+    end else if (mul_active) begin
         if (count < 32) begin
             if (product[0] == 1'b1) begin
                 product <= product + {multiplicand, 32'd0};
             end
             product <= product >> 1;
             count <= count + 1;
+            if (count == 6'd30) begin
+                ready <= 1'b1;
+            end
         end else begin
             mul_active <= 1'b0;
             out_data <= product;
@@ -107,6 +109,9 @@ always @(posedge clk or negedge rst_n) begin
                 remainder <= {remainder, 1'b1} << 1;
             end
             count <= count + 1;
+            if (count == 6'd30) begin
+                ready <= 1'b1;
+            end
         end else begin
             div_active <= 1'b0;
             out_data <= remainder >> 1;
