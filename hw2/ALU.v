@@ -85,7 +85,8 @@ always @(posedge clk or negedge rst_n) begin
             out_data <= out;
             ready <= 1'b1;
         end
-    end else if (mul_active) begin
+    end
+    if (mul_active) begin
         if (count < 32) begin
             if (product[0] == 1'b1) begin
                 product <= product + {multiplicand, 32'd0};
