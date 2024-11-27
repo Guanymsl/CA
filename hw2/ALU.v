@@ -92,10 +92,8 @@ always @(posedge clk or negedge rst_n) begin
             end
             product <= product >> 1;
             count <= count + 1;
-            if (count == 6'd30) begin
-                ready <= 1'b1;
-            end
-        end else begin
+        end
+        if (count == 6'd32) begin
             mul_active <= 1'b0;
             out_data <= product;
             ready <= 1'b1;
@@ -109,10 +107,8 @@ always @(posedge clk or negedge rst_n) begin
                 remainder <= {remainder, 1'b1} << 1;
             end
             count <= count + 1;
-            if (count == 6'd30) begin
-                ready <= 1'b1;
-            end
-        end else begin
+        end
+        if (count == 6'd32) begin
             div_active <= 1'b0;
             out_data <= remainder >> 1;
             ready <= 1'b1;
