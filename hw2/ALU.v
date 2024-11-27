@@ -22,6 +22,26 @@ reg [5:0]  count;
 reg mul_active, div_active;
 reg load;
 
+MUL mul (
+  .clk (clk),
+  .rst_n (rst_n),
+  .A (A),
+  .B (B),
+  .out_data (mul_out),
+  .ready (mul_ready),
+  .on (mul_on)
+);
+
+DIV div (
+  .clk (clk),
+  .rst_n (rst_n),
+  .A (A),
+  .B (B),
+  .out_data (div_out),
+  .ready (div_ready),
+  .on (div_on)
+);
+
 // ===============================================
 //                Combinational Logic
 // ===============================================
@@ -57,6 +77,8 @@ end
 // ===============================================
 //                Sequential Logic
 // ===============================================
+
+
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         ready <= 1'b0;
@@ -96,6 +118,7 @@ always @(posedge clk or negedge rst_n) begin
             end
             product <= product >> 1;
             count <= count + 1;
+            $display(count);
         end else begin
             mul_active <= 1'b0;
             out_data <= product;
@@ -110,6 +133,7 @@ always @(posedge clk or negedge rst_n) begin
                 remainder <= {remainder, 1'b1} << 1;
             end
             count <= count + 1;
+            $display(count);
         end else begin
             div_active <= 1'b0;
             out_data <= remainder >> 1;
