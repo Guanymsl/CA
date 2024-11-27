@@ -1,8 +1,8 @@
 module DIV (
   input clk,
   input rst_n,
-  input [31:0] A,
-  input [31:0] B,
+  input [31:0] A, // remainder
+  input [31:0] B, // devisor
   input on,
   output [63:0] out_data,
   output ready
@@ -20,30 +20,49 @@ reg ready;
 assign out_data = tmp;
 
 always @(*) begin
+  //$display("%b", quo);
+  //$display("%b", tmp_quo);
   if (rem >= div) begin
+    //$display("%h", rem);
+    //$display("%h", div);
     tmp_rem = rem - div;
     tmp_quo = (quo << 1) + 64'd1;
   end else begin
     tmp_rem = rem;
     tmp_quo = quo << 1;
   end
+  //$display("%h", tmp_rem);
+  //$display("%h", tmp_quo);
   tmp = (tmp_rem << 32) + tmp_quo;
+  //$display("%h", tmp);
 end
 
 always @(posedge clk or negedge rst_n) begin
   if (!rst_n) begin
     count <= 6'd0;
+    //tmp_quo <= 64'd0;
+    //tmp_rem <= 64'd0;
     ready <= 0;
     rem <= 64'd0;
     div <= 64'd0;
     quo <= 64'd0;
   end else if (!on) begin
     count <= 6'd0;
+    //tmp_quo <= 64'd0;
+    //tmp_rem <= 64'd0;
     ready <= 0;
     rem <= {32'd0, (A)};
     div <= {(B), 32'd0} >> 1;
     quo <= 64'd0;
   end else if (count <= 6'd31) begin
+    /*
+    $display(count);
+    $display("%h", tmp_quo);
+    $display("%h", quo);
+    */
+    //$display("%h", rem);
+    //$display("%h", quo);
+    //$display("%h", div);
     count <= count + 6'd1;
     quo <= tmp_quo;
     rem <= tmp_rem;
@@ -75,7 +94,7 @@ reg ready;
 assign out_data = tmp;
 
 always @(*) begin
-  if (tmp_A[count]) begin
+  if (tmp_A[count]) begin 
     tmp = out + tmp_B;
   end else begin
     tmp = out;
@@ -162,10 +181,15 @@ DIV div (
 // ===============================================
 
 always @(*) begin
+  /*
+  if (!loaded) begin
+    mode_in = mode;
+  end
+  */
   A = in_A;
   B = in_B;
   mode_in = mode;
-  case(mode)
+  case(mode) 
     4'd0: begin
       tmp_0 = $signed(A) + $signed(B);
       if (A[31] && B[31]) begin
@@ -211,6 +235,13 @@ always @(*) begin
     4'd8: out = {32'd0, (A << B)};
     default: out = 64'd0;
   endcase
+  /*
+  $display("=======================");
+  $display("%b", mode);
+  $display("%h", A);
+  $display("%h", B);
+  $display("%h", out);
+  */
 end
 
 // ===============================================
@@ -218,8 +249,11 @@ end
 // ===============================================
 
 always @(posedge clk or negedge rst_n) begin
-  if (!rst_n) begin
+  if (!rst_n) begin 
     out_data <= 64'd0;
+    //A <= 32'd0;
+    //B <= 32'd0;
+    //mode_in <= 4'd0;
     ready <= 1'd0;
     loaded <= 0;
   end else if (ready) begin
@@ -228,22 +262,41 @@ always @(posedge clk or negedge rst_n) begin
     mul_on <= 0;
     div_on <= 0;
     count <= 6'd0;
-  end else if (valid) begin
+  end else if (valid) begin 
+    /*
+    if (!loaded) begin
+      mode_in <= mode_in;
+    end
+    */
     loaded <= 1;
+    //$display(mode);
+    //$display(mode_in);
     if (mode_in <= 4'd8) begin
+      //$display("here");
       out_data <= out;
       ready <= 1;
     end else if (mode_in == 4'd9) begin
+      //count <= 6'd1;
       mul_on <= 1;
     end else if (mode_in == 4'd10) begin
       div_on <= 1;
     end
   end else if (mul_on) begin
+    //$display("here");
     out_data <= mul_out;
     ready <= mul_ready;
   end else if (div_on) begin
     out_data <= div_out;
     ready <= div_ready;
   end
+ /*
+   if (ready) begin
+     ready <= 0;
+     loaded <= 0;
+     mul_on <= 0;
+     div_on <= 0;
+     count <= 6'd0;
+   end
+   */
 end
 endmodule
