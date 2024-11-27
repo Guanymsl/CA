@@ -92,7 +92,7 @@ always @(posedge clk or negedge rst_n) begin
             ready <= 1'b1;
         end
     end else if (mul_active) begin
-        if (count < 32) begin
+        if (count < 33) begin
             if (product[0] == 1'b1) begin
                 product <= product + {multiplicand, 32'd0};
             end
@@ -100,13 +100,13 @@ always @(posedge clk or negedge rst_n) begin
             count <= count + 1;
         end else begin
             mul_active <= 1'b0;
-            out_data <= product;
         end
-        if (count == 30) begin
+        if (count == 31) begin
+            out_data <= product;
             ready <= 1'b1;
         end
     end else if (div_active) begin
-        if (count < 32) begin
+        if (count < 33) begin
             remainder <= remainder - {divisor, 32'd0};
             if (remainder[63] == 1'b1) begin
                 remainder <= (remainder + {divisor, 32'd0}) << 1;
@@ -116,9 +116,9 @@ always @(posedge clk or negedge rst_n) begin
             count <= count + 1;
         end else begin
             div_active <= 1'b0;
-            out_data <= remainder >> 1;
         end
-        if (count == 30) begin
+        if (count == 31) begin
+            out_data <= remainder >> 1;
             ready <= 1'b1;
         end
     end
