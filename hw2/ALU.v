@@ -10,34 +10,37 @@ module ALU (
 );
 
 // ===============================================
-//                    wire & reg
+//                    Registers
 // ===============================================
 reg [63:0] product;
 reg [31:0] dividend, divisor;
 reg [31:0] quotient, remainder;
-reg [5:0] cycle_count;
+reg [5:0]  cycle_count;
 reg mul_active, div_active;
 
 // ===============================================
-//                   combinational
+//                Combinational Logic
 // ===============================================
+
 always @(*) begin
-    case (mode)
-        4'b0000: out_data = {32'd0, in_A + in_B};       // Addition
-        4'b0001: out_data = {32'd0, in_A - in_B};       // Subtraction
-        4'b0010: out_data = {32'd0, in_A & in_B};       // AND
-        4'b0011: out_data = {32'd0, in_A | in_B};       // OR
-        4'b0100: out_data = {32'd0, in_A ^ in_B};       // XOR
-        4'b0101: out_data = {63'd0, (in_A == in_B)};    // Equality
-        4'b0110: out_data = {63'd0, (in_A >= in_B)};    // Greater or Equal
-        4'b0111: out_data = (in_B < 32) ? {32'd0, in_A >> in_B} : 64'd0; // Logical Right Shift
-        4'b1000: out_data = (in_B < 32) ? {32'd0, in_A << in_B} : 64'd0; // Logical Left Shift
-        default: out_data = 64'd0;                     // Undefined mode
-    endcase
+    if (!mul_active && !div_active) begin
+        case (mode)
+            4'b0000: out_data = {32'd0, reg_A + reg_B};
+            4'b0001: out_data = {32'd0, reg_A - reg_B};
+            4'b0010: out_data = {32'd0, reg_A & reg_B};
+            4'b0011: out_data = {32'd0, reg_A | reg_B};
+            4'b0100: out_data = {32'd0, reg_A ^ reg_B};
+            4'b0101: out_data = {63'd0, (reg_A == reg_B)};
+            4'b0110: out_data = {63'd0, (reg_A >= reg_B)};
+            4'b0111: out_data = {32'd0, reg_A >> reg_B};
+            4'b1000: out_data = {32'd0, reg_A << reg_B};
+        endcase
+        ready = 1'b1;
+    end
 end
 
 // ===============================================
-//                    sequential
+//                Sequential Logic
 // ===============================================
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -51,22 +54,22 @@ always @(posedge clk or negedge rst_n) begin
         out_data <= 64'd0;
     end else if (valid) begin
         case (mode)
-            4'b1001: begin  // Multiplication
+            4'b1001: begin
                 mul_active <= 1'b1;
                 product <= in_A * in_B;
-                cycle_count <= 6'd1;  // Adjusted cycle count for timing
+                cycle_count <= 6'd1;
                 ready <= 1'b0;
             end
-            4'b1010: begin  // Division
+            4'b1010: begin
                 div_active <= 1'b1;
                 dividend <= in_A;
                 divisor <= in_B;
                 quotient <= 32'd0;
                 remainder <= 32'd0;
-                cycle_count <= 6'd32;  // Assume 32 cycles for division
+                cycle_count <= 6'd32;
                 ready <= 1'b0;
             end
-            default: ready <= 1'b1;  // Immediate response for other operations
+            default: ready <= 1'b1;
         endcase
     end else if (mul_active) begin
         if (cycle_count > 0) begin
@@ -74,7 +77,7 @@ always @(posedge clk or negedge rst_n) begin
         end else begin
             mul_active <= 1'b0;
             ready <= 1'b1;
-            out_data <= product;  // Output multiplication result
+            out_data <= product;
         end
     end else if (div_active) begin
         if (cycle_count > 0) begin
@@ -86,7 +89,7 @@ always @(posedge clk or negedge rst_n) begin
         end else begin
             div_active <= 1'b0;
             ready <= 1'b1;
-            out_data <= {dividend, quotient};  // Output division result
+            out_data <= {dividend, quotient};
         end
     end
 end
