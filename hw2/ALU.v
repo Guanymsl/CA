@@ -21,19 +21,20 @@ reg mul_active, div_active;
 // ===============================================
 //                Combinational Logic
 // ===============================================
-
 always @(*) begin
-    if (!mul_active && !div_active) begin
+    ready = 1'b0;
+    out_data = 64'd0;
+    if (!mul_active && !div_active && valid) begin
         case (mode)
-            4'b0000: out_data = {32'd0, reg_A + reg_B};
-            4'b0001: out_data = {32'd0, reg_A - reg_B};
-            4'b0010: out_data = {32'd0, reg_A & reg_B};
-            4'b0011: out_data = {32'd0, reg_A | reg_B};
-            4'b0100: out_data = {32'd0, reg_A ^ reg_B};
-            4'b0101: out_data = {63'd0, (reg_A == reg_B)};
-            4'b0110: out_data = {63'd0, (reg_A >= reg_B)};
-            4'b0111: out_data = {32'd0, reg_A >> reg_B};
-            4'b1000: out_data = {32'd0, reg_A << reg_B};
+            4'b0000: out_data = {32'd0, in_A + in_B};
+            4'b0001: out_data = {32'd0, in_A - in_B};
+            4'b0010: out_data = {32'd0, in_A & in_B};
+            4'b0011: out_data = {32'd0, in_A | in_B};
+            4'b0100: out_data = {32'd0, in_A ^ in_B};
+            4'b0101: out_data = {63'd0, (in_A == in_B)};
+            4'b0110: out_data = {63'd0, (in_A >= in_B)};
+            4'b0111: out_data = {32'd0, in_A >> in_B};
+            4'b1000: out_data = {32'd0, in_A << in_B};
         endcase
         ready = 1'b1;
     end
@@ -69,7 +70,6 @@ always @(posedge clk or negedge rst_n) begin
                 cycle_count <= 6'd32;
                 ready <= 1'b0;
             end
-            default: ready <= 1'b1;
         endcase
     end else if (mul_active) begin
         if (cycle_count > 0) begin
