@@ -18,29 +18,9 @@ reg [63:0] product;
 reg [63:0] remainder;
 reg [31:0] divisor;
 reg [31:0] multiplicand;
-reg [5:0]  count;
+reg [6:0]  count;
 reg mul_active, div_active;
 reg load;
-
-MUL mul (
-  .clk (clk),
-  .rst_n (rst_n),
-  .A (A),
-  .B (B),
-  .out_data (mul_out),
-  .ready (mul_ready),
-  .on (mul_on)
-);
-
-DIV div (
-  .clk (clk),
-  .rst_n (rst_n),
-  .A (A),
-  .B (B),
-  .out_data (div_out),
-  .ready (div_ready),
-  .on (div_on)
-);
 
 // ===============================================
 //                Combinational Logic
@@ -85,13 +65,13 @@ always @(posedge clk or negedge rst_n) begin
         mul_active <= 1'b0;
         div_active <= 1'b0;
         out_data <= 64'd0;
-        count <= 6'd0;
+        count <= 7'd0;
         load <= 1'b0;
     end else if (ready) begin
         ready <= 1'b0;
         mul_active <= 1'b0;
         div_active <= 1'b0;
-        count <= 6'd0;
+        count <= 7'd0;
         load <= 1'b0;
     end else if (valid && !load) begin
         load <= 1'b1;
@@ -112,20 +92,19 @@ always @(posedge clk or negedge rst_n) begin
             ready <= 1'b1;
         end
     end else if (mul_active) begin
-        if (count < 32) begin
+        if (count < 33) begin
             if (product[0] == 1'b1) begin
                 product <= product + {multiplicand, 32'd0};
             end
             product <= product >> 1;
             count <= count + 1;
-            $display(count);
         end else begin
             mul_active <= 1'b0;
             out_data <= product;
             ready <= 1'b1;
         end
     end else if (div_active) begin
-        if (count < 32) begin
+        if (count < 33) begin
             remainder <= remainder - {divisor, 32'd0};
             if (remainder[63] == 1'b1) begin
                 remainder <= (remainder + {divisor, 32'd0}) << 1;
