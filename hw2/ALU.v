@@ -93,6 +93,8 @@ always @(posedge clk or negedge rst_n) begin
         end
     end else if (mul_active) begin
         if (count < 33) begin
+            $display(product);
+            $display(in_B);
             if (product[0] == 1'b1) begin
                 product <= product + {multiplicand, 32'd0};
             end
