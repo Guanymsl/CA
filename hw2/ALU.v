@@ -37,7 +37,7 @@ always @(*) begin
         end
         4'b0001: begin
             temp = in_A - in_B;
-            f ((in_A[31] ^ in_B[31]) && (in_A[31] ^ temp[31])) begin
+            if ((in_A[31] ^ in_B[31]) && (in_A[31] ^ temp[31])) begin
                 out = {32'd0, (in_A[31] ? 32'h80000000 : 32'h7FFFFFFF)};
             end else begin
                 out = {32'd0, temp};
