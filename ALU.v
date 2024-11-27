@@ -75,7 +75,7 @@ reg ready;
 assign out_data = tmp;
 
 always @(*) begin
-  if (tmp_A[count]) begin 
+  if (tmp_A[count]) begin
     tmp = out + tmp_B;
   end else begin
     tmp = out;
@@ -165,7 +165,7 @@ always @(*) begin
   A = in_A;
   B = in_B;
   mode_in = mode;
-  case(mode) 
+  case(mode)
     4'd0: begin
       tmp_0 = $signed(A) + $signed(B);
       if (A[31] && B[31]) begin
@@ -211,13 +211,6 @@ always @(*) begin
     4'd8: out = {32'd0, (A << B)};
     default: out = 64'd0;
   endcase
-  /*
-  $display("=======================");
-  $display("%b", mode);
-  $display("%h", A);
-  $display("%h", B);
-  $display("%h", out);
-  */
 end
 
 // ===============================================
@@ -225,7 +218,7 @@ end
 // ===============================================
 
 always @(posedge clk or negedge rst_n) begin
-  if (!rst_n) begin 
+  if (!rst_n) begin
     out_data <= 64'd0;
     ready <= 1'd0;
     loaded <= 0;
@@ -235,7 +228,7 @@ always @(posedge clk or negedge rst_n) begin
     mul_on <= 0;
     div_on <= 0;
     count <= 6'd0;
-  end else if (valid) begin 
+  end else if (valid) begin
     loaded <= 1;
     if (mode_in <= 4'd8) begin
       out_data <= out;

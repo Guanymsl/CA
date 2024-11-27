@@ -12,6 +12,8 @@ module ALU (
 // ===============================================
 //                    Registers
 // ===============================================
+reg [31:0] temp;
+reg [63:0] out;
 reg [63:0] product;
 reg [63:0] remainder;
 reg [31:0] divisor;
@@ -23,16 +25,31 @@ reg mul_active, div_active;
 //                Combinational Logic
 // ===============================================
 always @(*) begin
+    out = 64'd0;
     case (mode)
-        4'b0000: out_data = {32'd0, in_A + in_B};
-        4'b0001: out_data = {32'd0, in_A - in_B};
-        4'b0010: out_data = {32'd0, in_A & in_B};
-        4'b0011: out_data = {32'd0, in_A | in_B};
-        4'b0100: out_data = {32'd0, in_A ^ in_B};
-        4'b0101: out_data = {63'd0, (in_A == in_B)};
-        4'b0110: out_data = {63'd0, (in_A >= in_B)};
-        4'b0111: out_data = {32'd0, in_A >> in_B};
-        4'b1000: out_data = {32'd0, in_A << in_B};
+        4'b0000: begin
+            temp = in_A + in_B;
+            if (!(in_A[31] ^ in_B[31]) && (in_A[31] ^ temp[31])) begin
+                out = {32'd0, (in_A[31] ? 32'h80000000 : 32'h7FFFFFFF)};
+            end else begin
+                out = {32'd0, temp};
+            end
+        end
+        4'b0001: begin
+            temp = in_A - in_B;
+            f ((in_A[31] ^ in_B[31]) && (in_A[31] ^ temp[31])) begin
+                out = {32'd0, (in_A[31] ? 32'h80000000 : 32'h7FFFFFFF)};
+            end else begin
+                out = {32'd0, temp};
+            end
+        end
+        4'b0010: out = {32'd0, in_A & in_B};
+        4'b0011: out = {32'd0, in_A | in_B};
+        4'b0100: out = {32'd0, in_A ^ in_B};
+        4'b0101: out = {63'd0, (in_A == in_B)};
+        4'b0110: out = {63'd0, (in_A >= in_B)};
+        4'b0111: out = {32'd0, in_A >> in_B};
+        4'b1000: out = {32'd0, in_A << in_B};
     endcase
 end
 
@@ -65,6 +82,7 @@ always @(posedge clk or negedge rst_n) begin
             end
         endcase
         if (mode <= 8) begin
+            out_data <= out;
             ready <= 1'b1;
         end
     end else if (mul_active) begin
@@ -81,11 +99,11 @@ always @(posedge clk or negedge rst_n) begin
         end
     end else if (div_active) begin
         if (count < 32) begin
-            remainder = remainder - {divisor, 32'd0};
+            remainder <= remainder - {divisor, 32'd0};
             if (remainder[63] == 1'b1) begin
-                remainder = (remainder + {divisor, 32'd0}) << 1;
+                remainder <= (remainder + {divisor, 32'd0}) << 1;
             end else begin
-                remainder = {remainder, 1'b1} << 1;
+                remainder <= {remainder, 1'b1} << 1;
             end
             count <= count + 1;
         end else begin
