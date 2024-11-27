@@ -148,21 +148,21 @@ module testbench;
 
                     if (test_outD !== o_data) begin
                         $display (
-                            "Test[%d]: Error! Mode=%0h, A=%0h, B=%0h, Golden=%0h, Yours=%0h", 
+                            "Test[%d]: Error! Mode=%0h, A=%0h, B=%0h, Golden=%0h, Yours=%0h",
                             j, test_inst, test_inA, test_inB, test_outD, o_data
                         );
                         error = error+1;
                     end
                     else begin
                         $display (
-                            "Test[%d]: Correct! Mode=%0h, A=%0h, B=%0h, Golden=%0h, Yours=%0h", 
+                            "Test[%d]: Correct! Mode=%0h, A=%0h, B=%0h, Golden=%0h, Yours=%0h",
                             j, test_inst, test_inA, test_inB, test_outD, o_data
                         );
                     end
                 end
                 else begin
                     $display (
-                            "Test[%d]: Error! Mode=%0h, You do not output at the checking time", 
+                            "Test[%d]: Error! Mode=%0h, You do not output at the checking time",
                             j, test_inst
                     );
                     error = error+1;
