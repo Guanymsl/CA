@@ -60,7 +60,7 @@ always @(posedge valid) begin
     endcase
 end
 
-always @(posedge clk or negedge rst_n4 and valid) begin
+always @((posedge clk or negedge rst_n4) and valid) begin
     if (!rst_n) begin
         ready <= 1'b0;
         mul_active <= 1'b0;
