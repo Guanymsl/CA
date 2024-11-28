@@ -88,13 +88,10 @@ always @(posedge clk or negedge rst_n) begin
             4'b1010: begin
                 div_active <= 1'b1;
                 divisor <= in_B;
-                temp_dif = {32'd0, in_A} << 1
-                $display("\n%b", temp_dif);
-                $display("\n%b", in_A);
-                if (temp_dif < {divisor, 32'd0}) begin
-                    remainder <= temp_dif << 1;
+                if (!in_A[31] || in_B > 32'd1) begin
+                    remainder <= {32'd0, in_A} << 2;
                 end else begin
-                    remainder <= {temp_dif - {divisor, 32'd0}, 1'b1} << 1;
+                    remainder <= {31'd0, in_A[30:0], 2'b00};
                 end
             end
         endcase
