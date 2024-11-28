@@ -71,7 +71,6 @@ always @(posedge clk or negedge rst_n) begin
         div_active <= 1'b0;
         count <= 6'd0;
     end else if (valid) begin
-        load <= 1'b1;
         case (mode)
             4'b1001: begin
                 mul_active <= 1'b1;
