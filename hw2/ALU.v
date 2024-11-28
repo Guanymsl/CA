@@ -88,7 +88,7 @@ always @(posedge clk or negedge rst_n) begin
             4'b1010: begin
                 div_active <= 1'b1;
                 divisor <= in_B;
-                remainder <= {32'd0, in_A} << 1;
+                remainder <= {32'd0, in_A} << 2;
             end
         endcase
         if (mode <= 8) begin
@@ -97,8 +97,6 @@ always @(posedge clk or negedge rst_n) begin
         end
     end else if (mul_active) begin
         if (count < 33) begin
-            $display(product);
-            $display(multiplicand);
             if (product[0] == 1'b1) begin
                 product <= (product + {multiplicand, 32'd0}) >> 1;
             end else begin
@@ -114,6 +112,8 @@ always @(posedge clk or negedge rst_n) begin
         end
     end else if (div_active) begin
         if (count < 33) begin
+            $display(remainder);
+            $display(divisor);
             if (remainder < {divisor, 32'd0}) begin
                 remainder <= (remainder + {divisor, 32'd0}) << 1;
             end else begin
