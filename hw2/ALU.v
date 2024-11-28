@@ -20,7 +20,7 @@ reg [63:0] product;
 reg [63:0] remainder;
 reg [31:0] divisor;
 reg [31:0] multiplicand;
-reg [5:0]  count;
+reg [6:0]  count;
 reg mul_active, div_active;
 
 // ===============================================
@@ -64,12 +64,12 @@ always @(posedge clk or negedge rst_n) begin
         mul_active <= 1'b0;
         div_active <= 1'b0;
         out_data <= 64'd0;
-        count <= 6'd0;
+        count <= 7'd0;
     end else if (ready) begin
         ready <= 1'b0;
         mul_active <= 1'b0;
         div_active <= 1'b0;
-        count <= 6'd0;
+        count <= 7'd0;
     end else if (valid) begin
         case (mode)
             4'b1001: begin
