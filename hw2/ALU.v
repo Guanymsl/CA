@@ -14,6 +14,7 @@ module ALU (
 // ===============================================
 reg [31:0] temp;
 reg [63:0] out;
+reg [64:0] temp_sum;
 reg [63:0] product;
 reg [63:0] remainder;
 reg [31:0] divisor;
@@ -21,7 +22,6 @@ reg [31:0] multiplicand;
 reg [6:0]  count;
 reg mul_active, div_active;
 reg load;
-wire [64:0] temp_sum;
 
 // ===============================================
 //                Combinational Logic
@@ -97,7 +97,7 @@ always @(posedge clk or negedge rst_n) begin
     end else if (mul_active) begin
         if (count < 33) begin
             if (product[0] == 1'b1) begin
-                assign temp_sum = product + {multiplicand, 32'd0};
+                temp_sum = product + {multiplicand, 32'd0};
                 product <= temp_sum[64:1];
             end else begin
                 product <= product >> 1;
@@ -112,12 +112,12 @@ always @(posedge clk or negedge rst_n) begin
         end
     end else if (div_active) begin
         if (count < 33) begin
-            $display(remainder);
-            $display(divisor);
+            $display("\n%b", remainder);
+            $display("\n%b", divisor);
             if (remainder < {divisor, 32'd0}) begin
-                remainder <= (remainder + {divisor, 32'd0}) << 1;
+                remainder <= remainder << 1;
             end else begin
-                remainder <= {remainder, 1'b1} << 1;
+                remainder <= {remainder - {divisor, 32'd0}, 1'b1} << 1;
             end
             count <= count + 1;
         end else begin
