@@ -97,8 +97,8 @@ always @(posedge clk or negedge rst_n) begin
     end else if (mul_active) begin
         if (count < 33) begin
             if (product[0] == 1'b1) begin
-                car = (product + {multiplicand, 32'd0})[64];
-                product <= {car, (product + {multiplicand, 32'd0})[63:1]};
+                wire [64:0] temp_sum = product + {multiplicand, 32'd0};
+                product <= temp_sum[64:1];
             end else begin
                 product <= product >> 1;
             end
