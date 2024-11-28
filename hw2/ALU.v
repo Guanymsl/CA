@@ -122,7 +122,7 @@ always @(posedge clk or negedge rst_n) begin
             if (remainder < {divisor, 32'd0}) begin
                 remainder <= remainder << 1;
             end else begin
-                remainder <= {remainder - {divisor, 32'd0}, 1'b1} << 1;
+                remainder <= {remainder - {divisor, 32'd0}, 1'b1};
             end
             count <= count + 1;
         end else begin
