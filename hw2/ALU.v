@@ -20,9 +20,8 @@ reg [63:0] product;
 reg [63:0] remainder;
 reg [31:0] divisor;
 reg [31:0] multiplicand;
-reg [6:0]  count;
+reg [5:0]  count;
 reg mul_active, div_active;
-reg load;
 
 // ===============================================
 //                Combinational Logic
@@ -65,15 +64,13 @@ always @(posedge clk or negedge rst_n) begin
         mul_active <= 1'b0;
         div_active <= 1'b0;
         out_data <= 64'd0;
-        count <= 7'd0;
-        load <= 1'b0;
+        count <= 6'd0;
     end else if (ready) begin
         ready <= 1'b0;
         mul_active <= 1'b0;
         div_active <= 1'b0;
-        count <= 7'd0;
-        load <= 1'b0;
-    end else if (valid && !load) begin
+        count <= 6'd0;
+    end else if (valid) begin
         load <= 1'b1;
         case (mode)
             4'b1001: begin
@@ -117,13 +114,11 @@ always @(posedge clk or negedge rst_n) begin
         end
     end else if (div_active) begin
         if (count < 33) begin
-            $display("\n%b", remainder);
-            $display("\n%b", divisor);
             if (remainder < {divisor, 32'd0}) begin
                 temp_dif = remainder;
                 remainder <= remainder << 1;
             end else begin
-                temp_sum = remainder - {divisor, 32'd0};
+                temp_dif = remainder - {divisor, 32'd0};
                 remainder <= {remainder - {divisor, 32'd0}, 1'b1};
             end
             count <= count + 1;
@@ -131,7 +126,7 @@ always @(posedge clk or negedge rst_n) begin
             div_active <= 1'b0;
         end
         if (count == 31) begin
-            out_data <= {temp_sum[63:32], remainder[31:0]};
+            out_data <= {temp_dif[63:32], remainder[31:0]};
             ready <= 1'b1;
         end
     end
