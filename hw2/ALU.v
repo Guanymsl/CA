@@ -114,10 +114,10 @@ always @(posedge clk or negedge rst_n) begin
     end else if (div_active) begin
         if (count < 33) begin
             if (remainder < {divisor, 32'd0}) begin
-                temp_dif = remainder;
+                temp_dif <= remainder;
                 remainder <= remainder << 1;
             end else begin
-                temp_dif = remainder - {divisor, 32'd0};
+                temp_dif <= remainder - {divisor, 32'd0};
                 remainder <= {remainder - {divisor, 32'd0}, 1'b1};
             end
             count <= count + 1;
