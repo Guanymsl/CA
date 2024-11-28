@@ -21,7 +21,7 @@ reg [31:0] multiplicand;
 reg [6:0]  count;
 reg mul_active, div_active;
 reg load;
-wire car;
+wire [64:0] temp_sum;
 
 // ===============================================
 //                Combinational Logic
@@ -97,7 +97,7 @@ always @(posedge clk or negedge rst_n) begin
     end else if (mul_active) begin
         if (count < 33) begin
             if (product[0] == 1'b1) begin
-                wire [64:0] temp_sum = product + {multiplicand, 32'd0};
+                assign temp_sum = product + {multiplicand, 32'd0};
                 product <= temp_sum[64:1];
             end else begin
                 product <= product >> 1;
