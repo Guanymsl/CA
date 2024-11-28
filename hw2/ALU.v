@@ -79,8 +79,11 @@ always @(posedge clk or negedge rst_n) begin
             4'b1001: begin
                 mul_active <= 1'b1;
                 multiplicand <= in_A;
-                product <= {32'd0, in_B};
-                $display(in_B)
+                if (in_B[0] == 1'b1) begin
+                    product <= {in_A, in_B} >> 1;
+                end else begin
+                    product <= {32'd0, in_B} >> 1;
+                end
             end
             4'b1010: begin
                 div_active <= 1'b1;
@@ -106,7 +109,7 @@ always @(posedge clk or negedge rst_n) begin
             mul_active <= 1'b0;
         end
         if (count == 31) begin
-            out_data <= product;
+            out_data = product;
             ready <= 1'b1;
         end
     end else if (div_active) begin
