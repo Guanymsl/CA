@@ -87,7 +87,7 @@ always @(posedge clk or negedge rst_n) begin
             4'b1010: begin
                 div_active <= 1'b1;
                 divisor <= in_B;
-                remainder <= {32'd0, in_A} << 2;
+                remainder <= {32'd0, in_A} << 1;
             end
         endcase
         if (mode <= 8) begin
@@ -124,7 +124,7 @@ always @(posedge clk or negedge rst_n) begin
             div_active <= 1'b0;
         end
         if (count == 31) begin
-            out_data <= remainder >> 1;
+            out_data <= {remainder[63:32] >> 1, remainder[31:0]};
             ready <= 1'b1;
         end
     end
