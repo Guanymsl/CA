@@ -15,7 +15,6 @@ module ALU (
 reg [31:0] temp;
 reg [63:0] out;
 reg [64:0] temp_sum;
-reg [63:0] temp_dif;
 reg [63:0] product;
 reg [63:0] remainder;
 reg [31:0] divisor;
@@ -120,8 +119,10 @@ always @(posedge clk or negedge rst_n) begin
             $display("\n%b", remainder);
             $display("\n%b", divisor);
             if (remainder < {divisor, 32'd0}) begin
+                temp_sum = remainder;
                 remainder <= remainder << 1;
             end else begin
+                temp_sum = remainder - {divisor, 32'd0};
                 remainder <= {remainder - {divisor, 32'd0}, 1'b1};
             end
             count <= count + 1;
@@ -129,7 +130,7 @@ always @(posedge clk or negedge rst_n) begin
             div_active <= 1'b0;
         end
         if (count == 31) begin
-            out_data <= {remainder[63:32] >> 1, remainder[31:0]};
+            out_data <= {temp_sum[64:33] >> 1, remainder[31:0]};
             ready <= 1'b1;
         end
     end
