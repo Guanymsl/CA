@@ -87,7 +87,12 @@ always @(posedge clk or negedge rst_n) begin
             4'b1010: begin
                 div_active <= 1'b1;
                 divisor <= in_B;
-                remainder <= {32'd0, in_A} << 1;
+                temp_sum = {32'd0, in_A} << 1
+                if (temp_sum < {divisor, 32'd0}) begin
+                    remainder <= temp_sum << 1;
+                end else begin
+                    remainder <= {temp_sum - {divisor, 32'd0}, 1'b1} << 1;
+                end
             end
         endcase
         if (mode <= 8) begin
