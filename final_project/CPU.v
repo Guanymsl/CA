@@ -24,12 +24,12 @@ module CPU(clk,
     // Do not modify this part!!!            //
     // Exception: You may change wire to reg //
     reg    [31:0] PC          ;              //
-    wire   [31:0] PC_nxt      ;              //
-    wire          regWrite    ;              //
+    reg    [31:0] PC_nxt      ;              //
+    reg           regWrite    ;              //
     wire   [ 4:0] rs1, rs2, rd;              //
-    wire   [31:0] rs1_data    ;              //
-    wire   [31:0] rs2_data    ;              //
-    wire   [31:0] rd_data     ;              //
+    reg    [31:0] rs1_data    ;              //
+    reg    [31:0] rs2_data    ;              //
+    reg    [31:0] rd_data     ;              //
     //---------------------------------------//
 
     // Todo: other wire/reg
@@ -41,8 +41,8 @@ module CPU(clk,
     wire [2:0] funct3;
     wire [6:0] funct7;
 
-    reg valid_mulDiv, ready_mulDiv;
-    reg [31:0] mulDiv_result;
+    //reg valid_mulDiv, ready_mulDiv;
+    //reg [31:0] mulDiv_result;
 
     // Decode instruction
     assign opcode = instruction[6:0];
@@ -108,7 +108,7 @@ module CPU(clk,
                             alu_result = 0;
                         end
                     end
-                    valid_mulDiv = (funct7 == 7'b0000001) ? 1 : 0; // MUL, DIVU, REMU
+                    //valid_mulDiv = (funct7 == 7'b0000001) ? 1 : 0; // MUL, DIVU, REMU
                     default: alu_result = 0;
                 endcase
                 rd_data = alu_result;
@@ -268,7 +268,19 @@ module reg_file(clk, rst_n, wen, a1, a2, aw, d, q1, q2);
     end
 endmodule
 
-module mulDiv(clk, rst_n, valid, ready, mode, in_A, in_B, out);
-    // Todo: your HW2
+module mulDiv(
+    input         clk,
+    input         rst_n,
+    input         valid,
+    output        ready,
+    input  [1:0]  mode,
+    input  [31:0] in_A,
+    input  [31:0] in_B,
+    output [31:0] out
+);
+    // Todo: your HW2 logic for MUL/DIV/REMU
+    // Currently, leave this as a placeholder if not implemented
+    assign ready = 1'b0;
+    assign out = 32'b0;
 
 endmodule
