@@ -24,17 +24,26 @@ module CPU(clk,
     // Do not modify this part!!!            //
     // Exception: You may change wire to reg //
     reg    [31:0] PC          ;              //
-    reg    [31:0] PC_nxt      ;              //
-    reg           regWrite    ;              //
+    wire   [31:0] PC_nxt      ;              //
+    wire          regWrite    ;              //
     wire   [ 4:0] rs1, rs2, rd;              //
-    reg    [31:0] rs1_data    ;              //
-    reg    [31:0] rs2_data    ;              //
-    reg    [31:0] rd_data     ;              //
+    wire   [31:0] rs1_data    ;              //
+    wire   [31:0] rs2_data    ;              //
+    wire   [31:0] rd_data     ;              //
     //---------------------------------------//
 
     // Todo: other wire/reg
+
     reg [31:0] instruction;
     reg [31:0] alu_result;
+
+    reg wen_D_reg;
+    reg [31:0] addr_D_reg;
+    reg [31:0] wdata_D_reg;
+
+    reg regWrite_reg;
+    reg [31:0] PC_nxt_reg;
+    reg [31:0] rd_data_reg;
 
     wire [31:0] imm;
     wire [6:0] opcode;
@@ -44,7 +53,6 @@ module CPU(clk,
     //reg valid_mulDiv, ready_mulDiv;
     //reg [31:0] mulDiv_result;
 
-    // Decode instruction
     assign opcode = instruction[6:0];
     assign rs1 = instruction[19:15];
     assign rs2 = instruction[24:20];
@@ -52,7 +60,6 @@ module CPU(clk,
     assign funct3 = instruction[14:12];
     assign funct7 = instruction[31:25];
 
-    //
     assign imm = (opcode == 7'b1101111) ? {instruction[31], instruction[19:12], instruction[20], instruction[30:21], 1'b0} : // JAL
                  (opcode == 7'b1100111 || opcode == 7'b0000011) ? {{20{instruction[31]}}, instruction[31:20]} : // I-type (JALR/LW)
                  (opcode == 7'b0100011) ? {{20{instruction[31]}}, instruction[31:25], instruction[11:7]} : // S-type (SW)
@@ -75,6 +82,16 @@ module CPU(clk,
 
     // Todo: any combinational/sequential circuit
 
+    assign wen_D = wen_D_reg;
+    assign addr_D = addr_D_reg;
+    assign wdata_D = wdata_D_reg;
+
+    assign regWrite = regWrite_reg;
+    assign PC_nxt = PC_nxt_reg;
+    assign rd_data = rd_data_reg;
+
+    assign addr_I = PC;
+
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             PC <= 32'h00010000; // Do not modify this value!!!
@@ -88,12 +105,13 @@ module CPU(clk,
 
     always @(*) begin
         alu_result = 32'b0;
-        addr_D = 32'b0;
-        wdata_D = 32'b0;
-        wen_D = 1'b0;
-        rd_data = 32'b0;
-        regWrite = 1'b0;
-        PC_nxt = PC + 4;
+        addr_D_reg = 32'b0;
+        wdata_D_reg = 32'b0;
+        wen_D_reg = 1'b0;
+
+        rd_data_reg = 32'b0;
+        regWrite_reg = 1'b0;
+        PC_nxt_reg = PC + 4;
 
         case (opcode)
             // R-type instructions: add, sub
@@ -111,8 +129,8 @@ module CPU(clk,
                     //valid_mulDiv = (funct7 == 7'b0000001) ? 1 : 0; // MUL, DIVU, REMU
                     default: alu_result = 0;
                 endcase
-                rd_data = alu_result;
-                regWrite = 1;
+                rd_data_reg = alu_result;
+                regWrite_reg = 1;
             end
 
             // I-type instructions: addi, slli, srli, srai, slti
@@ -132,8 +150,8 @@ module CPU(clk,
                     3'b010: alu_result = (rs1_data < imm) ? 1 : 0; // SLTI
                     default: alu_result = 0;
                 endcase
-                rd_data = alu_result;
-                regWrite = 1;
+                rd_data_reg = alu_result;
+                regWrite_reg = 1;
             end
 
             // I-type instructions: lw
@@ -142,10 +160,10 @@ module CPU(clk,
                     3'b010: alu_result = rs1_data + imm; // LW
                     default: alu_result = 0;
                 endcase
-                addr_D = alu_result;
-                wen_D = 1'b0;
-                rd_data = rdata_D;
-                regWrite = 1'b1;
+                addr_D_reg = alu_result;
+                wen_D_reg = 1'b0;
+                rd_data_reg = rdata_D;
+                regWrite_reg = 1'b1;
             end
 
             // B-type instructions: beq, bne, bge, blt
@@ -158,7 +176,7 @@ module CPU(clk,
                     default: alu_result = 0;
                 endcase
                 if (alu_result) begin
-                    PC_nxt = PC + imm;
+                    PC_nxt_reg = PC + imm;
                 end
             end
 
@@ -168,17 +186,17 @@ module CPU(clk,
                     3'b010: alu_result = rs1_data + imm; // SW
                     default: alu_result = 0;
                 endcase
-                addr_D = alu_result;
-                wdata_D = rs2_data;
-                wen_D = 1;
+                addr_D_reg = alu_result;
+                wdata_D_reg = rs2_data;
+                wen_D_reg = 1;
             end
 
             // J-type instructions: jal
             7'b1101111: begin
                 alu_result = PC + imm; // JAL
-                PC_nxt = alu_result;
-                rd_data = PC + 4;
-                regWrite = 1;
+                PC_nxt_reg = alu_result;
+                rd_data_reg = PC + 4;
+                regWrite_reg = 1;
             end
 
             // I-type instructions: jalr
@@ -187,23 +205,23 @@ module CPU(clk,
                     3'b000: alu_result = (rs1_data + imm) & ~1; // JALR
                     default: alu_result = 0;
                 endcase
-                PC_nxt = alu_result;
-                rd_data = PC + 4;
-                regWrite = 1;
+                PC_nxt_reg = alu_result;
+                rd_data_reg = PC + 4;
+                regWrite_reg = 1;
             end
 
             // U-type instructions: auipc
             7'b0010111: begin
                 alu_result = PC + imm; // AUIPC
-                rd_data = alu_result;
-                regWrite = 1;
+                rd_data_reg = alu_result;
+                regWrite_reg = 1;
             end
 
             // U-type instructions: lui
             7'b0110111: begin
                 alu_result = imm; // LUI
-                rd_data = alu_result;
-                regWrite = 1;
+                rd_data_reg = alu_result;
+                regWrite_reg = 1;
             end
 
             default: alu_result = 0;
